@@ -5,7 +5,8 @@ import {
     onAuthStateChanged, 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
-    signOut 
+    signOut,
+    updatePassword
 } from 'firebase/auth';
 import { 
     getFirestore, 
@@ -22,6 +23,12 @@ import {
     getDoc,
     serverTimestamp
 } from 'firebase/firestore';
+import {
+    getStorage,
+    ref,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'firebase/storage';
 
 
 // --- ÍCONOS SVG ---
@@ -37,52 +44,23 @@ const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 
 const SocialIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
 const ChatBubbleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
 const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.687-1.475L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.655 4.398 1.908 6.166l-.215 1.086 1.057.199z" /></svg>;
-
+const KeyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
 
 // --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = {
-    apiKey: "AIzaSyBQMSUasHXkN0GXzrxdjp2eaDHupusQavQ",
-    authDomain: "shoptalk-d8c86.firebaseapp.com",
-    projectId: "shoptalk-d8c86",
-    storageBucket: "shoptalk-d8c86.appspot.com",
-    messagingSenderId: "687266707950",
-    appId: "1:687266707950:web:ae63df72b1c6670c3c36ff",
-    measurementId: "G-49Y7TS4NKX"
+  apiKey: "AIzaSyBQMSUasHXkN0GXzrxdjp2eaDHupusQavQ",
+  authDomain: "shoptalk-d8c86.firebaseapp.com",
+  projectId: "shoptalk-d8c86",
+  storageBucket: "shoptalk-d8c86.firebasestorage.app",
+  messagingSenderId: "687266707950",
+  appId: "1:687266707950:web:ae63df72b1c6670c3c36ff",
+  measurementId: "G-49Y7TS4NKX"
 };
-
 // --- INICIALIZAR FIREBASE (v9 Modular) ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-
-// --- HOOK GENÉRICO PARA LLAMADAS A GEMINI ---
-const useGemini = () => {
-    const callGeminiAPI = async (prompt) => {
-        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-        const apiKey = ""; // Canvas lo gestiona
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error en la API de Gemini: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
-            return result.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error("Respuesta no válida de la API de Gemini.");
-        }
-    };
-    return { callGeminiAPI };
-};
-
+const storage = getStorage(app); 
 
 // --- COMPONENTES MODALES ---
 const Modal = ({ children, isOpen, onClose, size = 'lg' }) => {
@@ -109,11 +87,15 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [images, setImages] = useState(Array(5).fill(''));
+  const [unit, setUnit] = useState('unidad');
+  const [imageFiles, setImageFiles] = useState(Array(5).fill(null));
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState(null);
-  const { callGeminiAPI } = useGemini();
+
+  const units = ['unidad', 'kilo', 'gramo', 'litro', 'caja', 'par', 'mes', 'año'];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, currentUser => setUser(currentUser));
@@ -122,12 +104,15 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   
   useEffect(() => {
     setIsSubmitting(false);
+    setIsUploading(false);
+    setUploadProgress(0);
     if (productToEdit) {
       setName(productToEdit.name || '');
       setDescription(productToEdit.description || '');
       setPrice(productToEdit.price || '');
-      const existingImages = productToEdit.images || [];
-      setImages([...existingImages, ...Array(5 - existingImages.length).fill('')]);
+      setUnit(productToEdit.unit || 'unidad');
+      setExistingImageUrls(productToEdit.images || []);
+      setImageFiles(Array(5).fill(null));
     } else {
       resetForm();
     }
@@ -135,7 +120,10 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
 
   const resetForm = () => {
     setName(''); setDescription(''); setPrice('');
-    setImages(Array(5).fill('')); setProductToEdit(null);
+    setUnit('unidad');
+    setImageFiles(Array(5).fill(null));
+    setExistingImageUrls([]);
+    setProductToEdit(null);
   };
   
   const handleClose = () => { 
@@ -143,60 +131,82 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
       onClose(); 
   }
 
-  const handleImageChange = (index, value) => {
-    const newImages = [...images]; newImages[index] = value; setImages(newImages);
+  const handleFileChange = (index, file) => {
+    const newFiles = [...imageFiles];
+    newFiles[index] = file;
+    setImageFiles(newFiles);
   };
 
-  const generateContent = async (type) => {
-    setIsGenerating(true);
-    let prompt = '';
-    if (type === 'description') {
-        if (!name) { alert("Por favor, ingresa un nombre de producto."); setIsGenerating(false); return; }
-        prompt = `Crea una descripción de producto atractiva para: "${name}". Tono amigable y persuasivo, máximo 3 frases.`;
-    } else if (type === 'name') {
-        const keywords = window.prompt("Ingresa palabras clave para el nombre (ej: 'taza cerámica artesanal'):");
-        if (!keywords) { setIsGenerating(false); return; }
-        prompt = `Sugiere 5 nombres creativos y cortos para un producto basado en: "${keywords}". Devuelve solo los nombres, separados por comas.`;
+  const uploadImages = async () => {
+    if (!user) {
+        throw new Error("User not authenticated for upload");
     }
+    setIsUploading(true);
+    setUploadProgress(0);
+    const imageUrls = [...existingImageUrls];
+    const filesToUpload = imageFiles.filter(file => file !== null);
+    if (filesToUpload.length === 0) {
+        setIsUploading(false);
+        return imageUrls;
+    }
+    
+    const uploadPromises = filesToUpload.map(file => {
+        return new Promise((resolve, reject) => {
+            const fileName = `${user.uid}/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, fileName);
+            const uploadTask = uploadBytesResumable(storageRef, file);
 
-    try {
-        const text = await callGeminiAPI(prompt);
-        if (type === 'description') {
-            setDescription(text.trim());
-        } else if (type === 'name') {
-            const suggestedName = text.split(',')[0].trim();
-            if (suggestedName) setName(suggestedName);
-        }
-    } catch (error) {
-        console.error("Error al generar contenido:", error);
-        alert("Hubo un error al generar contenido con IA.");
-    } finally {
-        setIsGenerating(false);
-    }
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    setUploadProgress(progress);
+                }, 
+                (error) => {
+                    console.error("Upload failed", error);
+                    reject(error);
+                }, 
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        resolve(downloadURL);
+                    });
+                }
+            );
+        });
+    });
+
+    const newUrls = await Promise.all(uploadPromises);
+    setIsUploading(false);
+    return [...imageUrls, ...newUrls];
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user || isSubmitting) return; 
     setIsSubmitting(true);
-    const productData = {
-      userId: user.uid, name, description,
-      price: parseFloat(price) || 0,
-      images: images.filter(img => img.trim() !== ''),
-    };
-
+    
     try {
-      if (productToEdit) {
-        const productRef = doc(db, 'products', productToEdit.id);
-        await updateDoc(productRef, productData);
-      } else {
-        await addDoc(collection(db, 'products'), {...productData, createdAt: serverTimestamp()});
-      }
-      handleClose();
+        const finalImageUrls = await uploadImages();
+        const productData = {
+          userId: user.uid, 
+          name, 
+          description,
+          price: parseFloat(price) || 0,
+          unit,
+          images: finalImageUrls,
+        };
+
+        if (productToEdit) {
+            const productRef = doc(db, 'products', productToEdit.id);
+            await updateDoc(productRef, productData);
+        } else {
+            await addDoc(collection(db, 'products'), {...productData, createdAt: serverTimestamp()});
+        }
+        handleClose();
     } catch (error) {
-      console.error("Error al guardar:", error);
-      alert("Hubo un error al guardar el producto.");
-      setIsSubmitting(false);
+        console.error("Error al guardar:", error);
+        alert("Hubo un error al guardar el producto.");
+        setIsSubmitting(false);
+        setIsUploading(false);
     }
   };
 
@@ -206,39 +216,65 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Producto</label>
-                <div className="flex items-center space-x-2">
-                    <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-                    <button type="button" onClick={() => generateContent('name')} disabled={isGenerating} title="Sugerir nombre con IA" className="p-2 mt-1 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"><SparklesIcon /></button>
-                </div>
+                <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
-
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows="4" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-                <button type="button" onClick={() => generateContent('description')} disabled={isGenerating || !name} className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 transition-all">
-                    {isGenerating ? 'Generando...' : <><SparklesIcon /> Generar Descripción con IA</>}
-                </button>
             </div>
+             
+             <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio (CLP)</label>
+                    <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ej: 19990" />
+                </div>
+                <div>
+                    <label htmlFor="unit" className="block text-sm font-medium text-gray-700">Unidad de Venta</label>
+                    <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        {units.map(u => <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>)}
+                    </select>
+                </div>
+             </div>
+
             <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio (CLP)</label>
-                <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ej: 19990" />
-            </div>
-             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes (URLs)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes</label>
+                {productToEdit && existingImageUrls.length > 0 && (
+                    <div className="mb-4">
+                        <p className="text-xs text-gray-600">Imágenes actuales:</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                            {existingImageUrls.map((url, index) => (
+                                <img key={index} src={url} className="h-16 w-16 rounded-md object-cover"/>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {images.map((img, index) => (
+                    {Array(5).fill(0).map((_, index) => (
                         <div key={index} className="flex items-center border border-gray-300 rounded-md p-2">
                             <CameraIcon/>
-                            <input type="text" value={img} onChange={(e) => handleImageChange(index, e.target.value)} className="ml-2 block w-full text-sm border-0 focus:ring-0" placeholder={`URL de la imagen ${index + 1}`} />
+                            <input 
+                                type="file" 
+                                accept="image/png, image/jpeg, image/webp"
+                                onChange={(e) => handleFileChange(index, e.target.files[0])} 
+                                className="ml-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" 
+                            />
                         </div>
                     ))}
                 </div>
-                 <p className="text-xs text-gray-500 mt-1">Usa un servicio como <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">Postimages</a> para subir fotos y obtener URLs.</p>
             </div>
+            
+            {isUploading && (
+                <div className="w-full bg-gray-200 rounded-full">
+                    <div className="bg-indigo-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{ width: `${uploadProgress}%` }}>
+                        {Math.round(uploadProgress)}%
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-end space-x-3 pt-4">
                 <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" disabled={isSubmitting} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition-colors">
-                    {isSubmitting ? 'Guardando...' : 'Guardar Producto'}
+                <button type="submit" disabled={isSubmitting || isUploading} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition-colors">
+                    {isUploading ? 'Subiendo...' : isSubmitting ? 'Guardando...' : 'Guardar Producto'}
                 </button>
             </div>
         </form>
@@ -246,11 +282,87 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   );
 };
 
+const ChangePasswordModal = ({ isOpen, onClose }) => {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setNewPassword('');
+            setConfirmPassword('');
+            setError('');
+            setSuccess('');
+            setIsSaving(false);
+        }
+    }, [isOpen]);
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        if (newPassword.length < 6) {
+            setError("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        setIsSaving(true);
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await updatePassword(user, newPassword);
+                setSuccess("¡Contraseña actualizada con éxito!");
+                setTimeout(() => {
+                    onClose();
+                }, 2000);
+            } catch (err) {
+                console.error("Error al cambiar contraseña:", err);
+                setError("Error al cambiar la contraseña. Es posible que necesites volver a iniciar sesión.");
+            } finally {
+                setIsSaving(false);
+            }
+        } else {
+            setError("No se ha podido identificar al usuario. Por favor, inicia sesión de nuevo.");
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Cambiar Contraseña</h2>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div>
+                    <label htmlFor="newPassword">Nueva Contraseña</label>
+                    <input type="password" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                    <label htmlFor="confirmPassword">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                {success && <p className="text-green-500 text-sm">{success}</p>}
+                 <div className="flex justify-end pt-4">
+                    <button type="submit" disabled={isSaving} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
+                        {isSaving ? "Guardando..." : "Guardar Contraseña"}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    )
+};
+
 const SocialPostModal = ({ isOpen, onClose, product }) => {
     const [post, setPost] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const { callGeminiAPI } = useGemini();
-    
+
     useEffect(() => {
         if (isOpen && product) {
             generatePost();
@@ -267,7 +379,7 @@ const SocialPostModal = ({ isOpen, onClose, product }) => {
         Precio: ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(product.price)}
         El post debe ser entusiasta, usar 2-3 emojis relevantes, y terminar con 5 hashtags chilenos relevantes. Incluye un llamado a la acción para visitar el link en la bio.`;
         try {
-            const text = await callGeminiAPI(prompt);
+            const text = `¡No te pierdas nuestro increíble ${product.name}! ✨\n\n${product.description}\n\nConsíguelo ahora por solo ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(product.price)}.\n\n¡Visita el link en nuestra bio para comprar! 🚀\n\n#${product.name.replace(/\s+/g, '')} #Oferta #Chile #VentasChile #TiendaOnline`;
             setPost(text);
         } catch (error) {
             console.error("Error al generar post:", error);
@@ -280,25 +392,13 @@ const SocialPostModal = ({ isOpen, onClose, product }) => {
     const copyToClipboard = () => {
         const textArea = document.createElement("textarea");
         textArea.value = post;
-        textArea.style.position = "fixed";
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.width = "2em";
-        textArea.style.height = "2em";
-        textArea.style.padding = "0";
-        textArea.style.border = "none";
-        textArea.style.outline = "none";
-        textArea.style.boxShadow = "none";
-        textArea.style.background = "transparent";
         document.body.appendChild(textArea);
-        textArea.focus();
         textArea.select();
         try {
             document.execCommand('copy');
             alert("Post copiado al portapapeles.");
         } catch (err) {
-            console.error('Fallback: Error al copiar', err);
-            alert('No se pudo copiar el texto.');
+            console.error('Error al copiar', err);
         }
         document.body.removeChild(textArea);
     };
@@ -371,7 +471,6 @@ const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
     );
 };
 
-
 // --- COMPONENTE DASHBOARD ---
 const DashboardPage = ({ user, onLogout }) => {
   const [products, setProducts] = useState([]);
@@ -379,13 +478,16 @@ const DashboardPage = ({ user, onLogout }) => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
   const [productForSocial, setProductForSocial] = useState(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-    
+    if (!user) {
+        return;
+    }
+
     const profileRef = doc(db, 'profiles', user.uid);
     const unsubProfile = onSnapshot(profileRef, (doc) => {
         if (doc.exists()) {
@@ -395,23 +497,29 @@ const DashboardPage = ({ user, onLogout }) => {
         }
     });
 
-    const q = query(collection(db, 'products'), where('userId', '==', user.uid));
+    const productsCollectionRef = collection(db, 'products');
+    const q = query(productsCollectionRef, where('userId', '==', user.uid));
+    
     const unsubProducts = onSnapshot(q, (snapshot) => {
       const productsData = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
       setProducts(productsData);
+    }, (error) => {
+        console.error("Dashboard: Error fetching products:", error);
     });
 
-    return () => { unsubProfile(); unsubProducts(); };
+    return () => { 
+        unsubProfile(); 
+        unsubProducts(); 
+    };
   }, [user]);
 
   const handleEdit = (product) => { setProductToEdit(product); setIsProductModalOpen(true); };
   const handleAddNew = () => { setProductToEdit(null); setIsProductModalOpen(true); };
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro?')) {
-        const productRef = doc(db, 'products', id);
-        await deleteDoc(productRef);
+      await deleteDoc(doc(db, 'products', id));
     }
   };
   const handleSocialPost = (product) => { setProductForSocial(product); setIsSocialModalOpen(true); };
@@ -419,43 +527,32 @@ const DashboardPage = ({ user, onLogout }) => {
   const getCatalogUrl = () => {
     const projectId = firebaseConfig.projectId;
     if (!projectId) {
-      console.error("Firebase projectId no encontrado en la configuración. No se puede generar un link para compartir.");
-      return "No se pudo generar el link. Falta el ID del proyecto.";
+      console.error("Firebase projectId no encontrado en la configuración.");
+      return "No se pudo generar el link.";
     }
     const baseUrl = `https://${projectId}.web.app`;
     return `${baseUrl}?catalog=${user.uid}`;
   };
 
   const copyLink = () => {
-      const catalogUrl = getCatalogUrl();
-      if (!catalogUrl.startsWith("http")) {
-          alert(catalogUrl);
-          return;
-      }
-      const textArea = document.createElement("textarea");
-      textArea.value = catalogUrl;
-      textArea.style.position = "fixed";
-      textArea.style.top = "0";
-      textArea.style.left = "0";
-      textArea.style.width = "2em";
-      textArea.style.height = "2em";
-      textArea.style.padding = "0";
-      textArea.style.border = "none";
-      textArea.style.outline = "none";
-      textArea.style.boxShadow = "none";
-      textArea.style.background = "transparent";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-          document.execCommand('copy');
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-          console.error('Fallback: Error al copiar', err);
-          alert('No se pudo copiar el enlace.');
-      }
-      document.body.removeChild(textArea);
+    const catalogUrl = getCatalogUrl();
+    if (!catalogUrl.startsWith("http")) {
+        alert(catalogUrl);
+        return;
+    }
+    const textArea = document.createElement("textarea");
+    textArea.value = catalogUrl;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+        console.error('Error al copiar', err);
+        alert('No se pudo copiar el enlace.');
+    }
+    document.body.removeChild(textArea);
   };
 
   return (
@@ -463,8 +560,9 @@ const DashboardPage = ({ user, onLogout }) => {
         <header className="bg-white shadow-sm">
             <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900">{profile.businessName || 'Mi Tienda Social'}</h1>
-                 <div className="flex items-center space-x-4">
+                 <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600 hidden sm:block">{user.email}</span>
+                    <button onClick={() => setChangePasswordModalOpen(true)} title="Cambiar Contraseña" className="p-2 rounded-full text-gray-500 hover:bg-gray-100"><KeyIcon /></button>
                     <button onClick={() => setIsProfileModalOpen(true)} title="Editar Perfil" className="p-2 rounded-full text-gray-500 hover:bg-gray-100"><UserCircleIcon /></button>
                     <button onClick={onLogout} title="Cerrar Sesión" className="p-2 rounded-full text-gray-500 hover:bg-gray-100"><LogoutIcon /></button>
                  </div>
@@ -472,7 +570,7 @@ const DashboardPage = ({ user, onLogout }) => {
         </header>
 
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-             <div className="px-4 py-6 sm:px-0">
+            <div className="px-4 py-6 sm:px-0">
                 <div className="bg-white shadow rounded-lg p-4 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
                         <h3 className="text-lg leading-6 font-medium text-gray-900">Tu Catálogo está listo</h3>
@@ -511,7 +609,12 @@ const DashboardPage = ({ user, onLogout }) => {
                                 </div>
                                 <div className="p-4 flex-grow flex flex-col">
                                     <h3 className="text-lg font-semibold text-gray-800 truncate flex-grow">{product.name}</h3>
-                                    <p className="text-gray-600 font-bold mt-1">${new Intl.NumberFormat('es-CL').format(product.price)}</p>
+                                    <p className="text-gray-600 font-bold mt-1">
+                                        ${new Intl.NumberFormat('es-CL').format(product.price)}
+                                        {product.unit && product.unit !== 'unidad' && (
+                                            <span className="text-sm font-medium text-gray-500"> / {product.unit}</span>
+                                        )}
+                                    </p>
                                     <div className="flex justify-end space-x-1 mt-4">
                                         <button onClick={() => handleSocialPost(product)} title="Crear post para redes" className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-purple-600"><SocialIcon /></button>
                                         <button onClick={() => handleEdit(product)} title="Editar" className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-blue-600"><EditIcon /></button>
@@ -528,63 +631,12 @@ const DashboardPage = ({ user, onLogout }) => {
         <ProductForm isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} productToEdit={productToEdit} setProductToEdit={setProductToEdit}/>
         <SocialPostModal isOpen={isSocialModalOpen} onClose={() => setIsSocialModalOpen(false)} product={productForSocial} />
         <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} profile={profile} setProfile={setProfile} />
+        <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={() => setChangePasswordModalOpen(false)} />
     </div>
   );
 };
 
 // --- COMPONENTES DE CATÁLOGO PÚBLICO ---
-const AskAIModal = ({ isOpen, onClose, product }) => {
-    const [question, setQuestion] = useState('');
-    const [answer, setAnswer] = useState('');
-    const [isThinking, setIsThinking] = useState(false);
-    const { callGeminiAPI } = useGemini();
-
-    const handleAsk = async () => {
-        if (!question.trim()) return;
-        setIsThinking(true);
-        setAnswer('');
-        const prompt = `Eres un asistente de tienda amigable. Un cliente tiene una pregunta sobre un producto. Responde basándote ÚNICAMENTE en la información proporcionada. Si la respuesta no está en la información, di amablemente que no tienes ese detalle y sugiere contactar al vendedor.
-        
-        Información del Producto:
-        - Nombre: ${product.name}
-        - Descripción: ${product.description}
-        - Precio: ${product.price} CLP
-
-        Pregunta del Cliente: "${question}"
-        
-        Tu respuesta:`;
-        
-        try {
-            const result = await callGeminiAPI(prompt);
-            setAnswer(result);
-        } catch (error) {
-            console.error("Error en AskAI:", error);
-            setAnswer("Lo siento, tuve un problema para procesar tu pregunta. Intenta de nuevo.");
-        } finally {
-            setIsThinking(false);
-        }
-    };
-
-    return (
-        <Modal isOpen={isOpen} onClose={() => { setQuestion(''); setAnswer(''); onClose(); }}>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">✨ Pregúntale a la IA</h2>
-            <p className="text-sm text-gray-600 mb-4">Haz una pregunta sobre: <strong>{product.name}</strong></p>
-            <div className="space-y-4">
-                <textarea value={question} onChange={e => setQuestion(e.target.value)} rows="3" placeholder="Ej: ¿Cuáles son las dimensiones?" className="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                <button onClick={handleAsk} disabled={isThinking} className="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
-                    {isThinking ? "Pensando..." : "Enviar Pregunta"}
-                </button>
-                {answer && (
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p className="font-semibold text-gray-800">Respuesta:</p>
-                        <p className="text-gray-700">{answer}</p>
-                    </div>
-                )}
-            </div>
-        </Modal>
-    );
-};
-
 const CatalogPage = ({ userId }) => {
     const [products, setProducts] = useState([]);
     const [profile, setUserProfile] = useState(null);
@@ -659,7 +711,12 @@ const CatalogPage = ({ userId }) => {
                                 <div className="p-6 flex-grow flex flex-col">
                                     <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
                                     <p className="text-gray-600 mt-2 flex-grow">{product.description}</p>
-                                    <p className="text-3xl font-extrabold text-indigo-600 mt-4">${new Intl.NumberFormat('es-CL').format(product.price)}</p>
+                                    <p className="text-3xl font-extrabold text-indigo-600 mt-4">
+                                        ${new Intl.NumberFormat('es-CL').format(product.price)}
+                                        {product.unit && product.unit !== 'unidad' && (
+                                            <span className="text-lg font-medium text-gray-500"> / {product.unit}</span>
+                                        )}
+                                    </p>
                                     <div className="mt-6 space-y-3">
                                         <button onClick={() => handleAskAI(product)} className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center text-lg">
                                             <ChatBubbleIcon /> Preguntar a la IA
@@ -673,7 +730,7 @@ const CatalogPage = ({ userId }) => {
                         ))}
                     </div>
             </main>
-            {productForAI && <AskAIModal isOpen={isAskAIModalOpen} onClose={() => setIsAskAIModalOpen(false)} product={productForAI} />}
+            <AskAIModal isOpen={isAskAIModalOpen} onClose={() => setIsAskAIModalOpen(false)} product={productForAI} />
         </div>
     );
 };
@@ -745,7 +802,7 @@ const AuthPage = () => {
             </div>
         </div>
     );
-}
+};
 
 // --- COMPONENTE PRINCIPAL ---
 export default function App() {
