@@ -56,6 +56,7 @@ const firebaseConfig = {
   appId: "1:687266707950:web:ae63df72b1c6670c3c36ff",
   measurementId: "G-49Y7TS4NKX"
 };
+
 // --- INICIALIZAR FIREBASE (v9 Modular) ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -419,20 +420,70 @@ const SocialPostModal = ({ isOpen, onClose, product }) => {
 
 const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
     const [businessName, setBusinessName] = useState('');
+    const [whatsappCode, setWhatsappCode] = useState('+56');
     const [whatsappNumber, setWhatsappNumber] = useState('');
+    const [theme, setTheme] = useState('default');
+    const [profileImageFile, setProfileImageFile] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const countries = [
+        { name: 'Chile', code: '+56' }, { name: 'Argentina', code: '+54' },
+        { name: 'Perú', code: '+51' }, { name: 'Colombia', code: '+57' },
+        { name: 'México', code: '+52' }, { name: 'España', code: '+34' },
+        { name: 'USA', code: '+1' },
+    ];
+
+    const themes = [
+        { id: 'default', name: 'Claro', bg: 'bg-gray-100', text: 'text-gray-800', accent: 'bg-white' },
+        { id: 'dark', name: 'Oscuro', bg: 'bg-gray-800', text: 'text-white', accent: 'bg-gray-900' },
+        { id: 'sunset', name: 'Atardecer', bg: 'bg-gradient-to-br from-yellow-200 via-red-300 to-pink-400', text: 'text-white', accent: 'bg-white/30' },
+        { id: 'ocean', name: 'Océano', bg: 'bg-gradient-to-br from-blue-300 to-indigo-500', text: 'text-white', accent: 'bg-white/30' },
+        { id: 'forest', name: 'Bosque', bg: 'bg-gradient-to-br from-green-400 to-teal-600', text: 'text-white', accent: 'bg-white/30' },
+        { id: 'lavender', name: 'Lavanda', bg: 'bg-gradient-to-br from-purple-300 to-violet-500', text: 'text-white', accent: 'bg-white/30' },
+    ];
 
     useEffect(() => {
         setIsSaving(false);
+        setIsUploading(false);
         if(profile){
             setBusinessName(profile.businessName || '');
-            setWhatsappNumber(profile.whatsappNumber || '');
+            setWhatsappCode(profile.whatsapp?.code || '+56');
+            setWhatsappNumber(profile.whatsapp?.number || '');
+            setTheme(profile.theme || 'default');
+            setProfileImageFile(null);
         }
     }, [profile, isOpen]);
     
     const handleSave = async () => {
         setIsSaving(true);
-        const profileData = { businessName, whatsappNumber };
+        let profileImageUrl = profile.profileImageUrl || '';
+
+        if (profileImageFile) {
+            setIsUploading(true);
+            try {
+                const fileName = `${user.uid}/profile_${Date.now()}`;
+                const storageRef = ref(storage, fileName);
+                const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
+                await uploadTask;
+                profileImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            } catch (error) {
+                console.error("Error subiendo imagen de perfil:", error);
+                alert("No se pudo subir la imagen de perfil.");
+                setIsSaving(false);
+                setIsUploading(false);
+                return;
+            }
+            setIsUploading(false);
+        }
+
+        const profileData = { 
+            businessName, 
+            whatsapp: { code: whatsappCode, number: whatsappNumber },
+            theme,
+            profileImageUrl,
+        };
+
         try {
             const profileRef = doc(db, 'profiles', user.uid);
             await setDoc(profileRef, profileData, { merge: true });
@@ -441,14 +492,22 @@ const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
         } catch (error) {
             console.error("Error guardando perfil", error);
             alert("No se pudo guardar el perfil.");
+        } finally {
             setIsSaving(false);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Perfil de la Tienda</h2>
-            <div className="space-y-4">
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Perfil y Diseño de la Tienda</h2>
+            <div className="space-y-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
+                    <div className="mt-2 flex items-center gap-4">
+                        <img src={profile.profileImageUrl || `https://placehold.co/100x100/e2e8f0/64748b?text=Perfil`} alt="Perfil" className="h-24 w-24 rounded-full object-cover"/>
+                        <input type="file" accept="image/*" onChange={e => setProfileImageFile(e.target.files[0])} className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                    </div>
+                </div>
                 <div>
                     <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Nombre de tu Tienda</label>
                     <input type="text" id="businessName" value={businessName} onChange={e => setBusinessName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
@@ -456,15 +515,29 @@ const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
                  <div>
                     <label htmlFor="whatsappNumber" className="block text-sm font-medium text-gray-700">Número de WhatsApp</label>
                     <div className="flex items-center mt-1">
-                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+56</span>
-                       <input type="tel" id="whatsappNumber" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} className="block w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="912345678" />
+                       <select value={whatsappCode} onChange={e => setWhatsappCode(e.target.value)} className="block px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                           {countries.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+                       </select>
+                       <input type="tel" id="whatsappNumber" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} className="block w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="912345678" />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Tu número se usará para que los clientes te contacten. No incluyas el +56.</p>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Tema del Catálogo</label>
+                    <div className="mt-2 grid grid-cols-3 gap-3">
+                        {themes.map(t => (
+                            <button key={t.id} type="button" onClick={() => setTheme(t.id)} className={`p-2 rounded-lg border-2 ${theme === t.id ? 'border-indigo-500' : 'border-transparent'}`}>
+                                <div className={`h-16 w-full rounded-md ${t.bg} flex items-center justify-center`}>
+                                    <div className={`h-8 w-8 rounded-full ${t.accent}`}></div>
+                                </div>
+                                <p className="text-sm text-center mt-1">{t.name}</p>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
             <div className="mt-6 flex justify-end">
-                <button onClick={handleSave} disabled={isSaving} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
-                    {isSaving ? "Guardando..." : "Guardar Cambios"}
+                <button onClick={handleSave} disabled={isSaving || isUploading} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
+                    {isUploading ? 'Subiendo imagen...' : isSaving ? "Guardando..." : "Guardar Cambios"}
                 </button>
             </div>
         </Modal>
@@ -474,7 +547,7 @@ const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
 // --- COMPONENTE DASHBOARD ---
 const DashboardPage = ({ user, onLogout }) => {
   const [products, setProducts] = useState([]);
-  const [profile, setProfile] = useState({ businessName: '', whatsappNumber: ''});
+  const [profile, setProfile] = useState({ businessName: '', whatsapp: { code: '+56', number: '' }, theme: 'default', profileImageUrl: '' });
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -484,16 +557,14 @@ const DashboardPage = ({ user, onLogout }) => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-        return;
-    }
+    if (!user) return;
 
     const profileRef = doc(db, 'profiles', user.uid);
     const unsubProfile = onSnapshot(profileRef, (doc) => {
         if (doc.exists()) {
             setProfile(doc.data());
         } else {
-            setDoc(profileRef, { businessName: 'Mi Tienda', whatsappNumber: '' });
+            setDoc(profileRef, { businessName: 'Mi Tienda', whatsapp: { code: '+56', number: '' }, theme: 'default', profileImageUrl: '' });
         }
     });
 
@@ -505,8 +576,6 @@ const DashboardPage = ({ user, onLogout }) => {
         .map(doc => ({ id: doc.id, ...doc.data() }))
         .sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
       setProducts(productsData);
-    }, (error) => {
-        console.error("Dashboard: Error fetching products:", error);
     });
 
     return () => { 
@@ -611,7 +680,7 @@ const DashboardPage = ({ user, onLogout }) => {
                                     <h3 className="text-lg font-semibold text-gray-800 truncate flex-grow">{product.name}</h3>
                                     <p className="text-gray-600 font-bold mt-1">
                                         ${new Intl.NumberFormat('es-CL').format(product.price)}
-                                        {product.unit && product.unit !== 'unidad' && (
+                                        {product.unit && (
                                             <span className="text-sm font-medium text-gray-500"> / {product.unit}</span>
                                         )}
                                     </p>
@@ -643,8 +712,17 @@ const CatalogPage = ({ userId }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedImage, setSelectedImage] = useState({});
-    const [isAskAIModalOpen, setIsAskAIModalOpen] = useState(false);
-    const [productForAI, setProductForAI] = useState(null);
+
+    const themes = {
+        default: { bg: 'bg-gray-100', text: 'text-gray-800', accent: 'bg-white', button: 'bg-indigo-600 hover:bg-indigo-700' },
+        dark: { bg: 'bg-gray-800', text: 'text-white', accent: 'bg-gray-900', button: 'bg-indigo-500 hover:bg-indigo-600' },
+        sunset: { bg: 'bg-gradient-to-br from-yellow-200 via-red-300 to-pink-400', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
+        ocean: { bg: 'bg-gradient-to-br from-blue-300 to-indigo-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
+        forest: { bg: 'bg-gradient-to-br from-green-400 to-teal-600', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
+        lavender: { bg: 'bg-gradient-to-br from-purple-300 to-violet-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
+    };
+
+    const currentTheme = themes[profile?.theme] || themes.default;
 
     useEffect(() => {
         const fetchCatalogData = async () => {
@@ -673,26 +751,24 @@ const CatalogPage = ({ userId }) => {
     }, [userId]);
     
     const handleImageSelect = (productId, imageIndex) => setSelectedImage(prev => ({ ...prev, [productId]: imageIndex }));
-    const handleAskAI = (product) => { setProductForAI(product); setIsAskAIModalOpen(true); };
 
     if (loading) return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><div className="text-xl font-semibold">Cargando...</div></div>;
     if (error) return <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4"><div className="text-center text-red-600">{error}</div></div>;
 
     return (
-        <div className="bg-gray-100 min-h-screen font-sans">
-            <header className="bg-white shadow-lg sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto py-6 px-4 text-center">
-                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-                        {profile?.businessName || 'Catálogo de Productos'}
-                    </h1>
-                </div>
+        <div className={`min-h-screen font-sans transition-colors duration-500 ${currentTheme.bg}`}>
+            <header className="py-10 px-4 text-center">
+                <img src={profile?.profileImageUrl || `https://placehold.co/128x128/e2e8f0/64748b?text=Perfil`} alt="Perfil" className={`h-32 w-32 rounded-full object-cover mx-auto mb-4 border-4 border-white/50 shadow-lg`}/>
+                <h1 className={`text-4xl font-extrabold tracking-tight ${currentTheme.text} drop-shadow-md`}>
+                    {profile?.businessName || 'Catálogo de Productos'}
+                </h1>
             </header>
-            <main className="max-w-4xl mx-auto py-10 px-4">
+            <main className="max-w-4xl mx-auto pb-10 px-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {products.map(product => (
-                            <div key={product.id} className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                            <div key={product.id} className={`rounded-2xl shadow-xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl ${currentTheme.accent} ${currentTheme.text}`}>
                                 <div className="relative">
-                                    <div className="h-64 bg-gray-200">
+                                    <div className="h-64 bg-black/10">
                                        <img 
                                             src={product.images?.[selectedImage[product.id] || 0] || `https://placehold.co/600x400/e2e8f0/64748b?text=Producto`} 
                                             alt={product.name} 
@@ -709,19 +785,16 @@ const CatalogPage = ({ userId }) => {
                                     )}
                                 </div>
                                 <div className="p-6 flex-grow flex flex-col">
-                                    <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
-                                    <p className="text-gray-600 mt-2 flex-grow">{product.description}</p>
-                                    <p className="text-3xl font-extrabold text-indigo-600 mt-4">
+                                    <h2 className="text-2xl font-bold">{product.name}</h2>
+                                    <p className="opacity-80 mt-2 flex-grow">{product.description}</p>
+                                    <p className="text-3xl font-extrabold mt-4">
                                         ${new Intl.NumberFormat('es-CL').format(product.price)}
-                                        {product.unit && product.unit !== 'unidad' && (
-                                            <span className="text-lg font-medium text-gray-500"> / {product.unit}</span>
+                                        {product.unit && (
+                                            <span className="text-lg font-medium opacity-70"> / {product.unit}</span>
                                         )}
                                     </p>
                                     <div className="mt-6 space-y-3">
-                                        <button onClick={() => handleAskAI(product)} className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center text-lg">
-                                            <ChatBubbleIcon /> Preguntar a la IA
-                                        </button>
-                                        <a href={`https://wa.me/56${profile?.whatsappNumber}?text=${encodeURIComponent(`Hola! Me interesa el producto: ${product.name}`)}`} target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center text-lg">
+                                        <a href={`https://wa.me/${profile?.whatsapp?.code?.replace('+','')}${profile?.whatsapp?.number}?text=${encodeURIComponent(`Hola! Me interesa el producto: ${product.name}`)}`} target="_blank" rel="noopener noreferrer" className={`w-full font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center text-lg ${currentTheme.button}`}>
                                             <WhatsAppIcon /> Consultar por WhatsApp
                                         </a>
                                     </div>
@@ -730,7 +803,6 @@ const CatalogPage = ({ userId }) => {
                         ))}
                     </div>
             </main>
-            <AskAIModal isOpen={isAskAIModalOpen} onClose={() => setIsAskAIModalOpen(false)} product={productForAI} />
         </div>
     );
 };
@@ -755,7 +827,9 @@ const AuthPage = () => {
                 const profileRef = doc(db, 'profiles', userCredential.user.uid);
                 await setDoc(profileRef, {
                     businessName: "Mi Tienda",
-                    whatsappNumber: ""
+                    whatsapp: { code: '+56', number: '' },
+                    theme: 'default',
+                    profileImageUrl: ''
                 });
             }
         } catch (err) {
