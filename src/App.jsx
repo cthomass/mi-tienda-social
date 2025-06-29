@@ -91,10 +91,10 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   const [currency, setCurrency] = useState('USD');
   const [unit, setUnit] = useState('unidad');
   const [imageFiles, setImageFiles] = useState(Array(5).fill(null));
+  const [imagePreviews, setImagePreviews] = useState(Array(5).fill(null));
   const [imageRatings, setImageRatings] = useState(Array(5).fill(null));
   const [videoFile, setVideoFile] = useState(null);
-  const [existingImageUrls, setExistingImageUrls] = useState([]);
-  const [existingVideoUrl, setExistingVideoUrl] = useState('');
+  const [videoPreview, setVideoPreview] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,8 +116,12 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
           setPrice(productToEdit.price || '');
           setCurrency(productToEdit.currency || 'USD');
           setUnit(productToEdit.unit || 'unidad');
-          setExistingImageUrls(productToEdit.images || []);
-          setExistingVideoUrl(productToEdit.videoUrl || '');
+          
+          const existingImages = productToEdit.images || [];
+          const previews = [...existingImages, ...Array(5 - existingImages.length).fill(null)];
+          setImagePreviews(previews);
+
+          setVideoPreview(productToEdit.videoUrl || null);
         } else {
           resetForm();
         }
@@ -128,10 +132,10 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
     setName(''); setDescription(''); setPrice('');
     setCurrency('USD'); setUnit('unidad');
     setImageFiles(Array(5).fill(null));
+    setImagePreviews(Array(5).fill(null));
     setImageRatings(Array(5).fill(null));
     setVideoFile(null);
-    setExistingImageUrls([]);
-    setExistingVideoUrl('');
+    setVideoPreview(null);
     setProductToEdit(null);
   };
   
@@ -141,6 +145,11 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
     const newFiles = [...imageFiles];
     newFiles[index] = file;
     setImageFiles(newFiles);
+
+    const newPreviews = [...imagePreviews];
+    newPreviews[index] = file ? URL.createObjectURL(file) : null;
+    setImagePreviews(newPreviews);
+
     rateImageQuality(file, index);
   };
   
@@ -150,6 +159,26 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
           return;
       }
       setVideoFile(file);
+      setVideoPreview(file ? URL.createObjectURL(file) : null);
+  }
+
+  const removeImage = (index) => {
+      const newPreviews = [...imagePreviews];
+      newPreviews[index] = null;
+      setImagePreviews(newPreviews);
+      
+      const newFiles = [...imageFiles];
+      newFiles[index] = null;
+      setImageFiles(newFiles);
+
+      const newRatings = [...imageRatings];
+      newRatings[index] = null;
+      setImageRatings(newRatings);
+  }
+  
+  const removeVideo = () => {
+      setVideoPreview(null);
+      setVideoFile(null);
   }
 
   const fileToGenerativePart = async (file) => {
@@ -205,9 +234,9 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   const uploadMedia = async () => {
     setIsUploading(true);
     setUploadProgress(0);
-    let uploadedVideoUrl = existingVideoUrl;
-    let uploadedImageUrls = [...existingImageUrls];
-
+    let uploadedVideoUrl = productToEdit?.videoUrl || '';
+    let uploadedImageUrls = productToEdit?.images || [];
+  
     const filesToUpload = imageFiles.filter(file => file !== null);
     
     if (filesToUpload.length > 0) {
@@ -226,7 +255,7 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
         const newImageUrls = await Promise.all(imageUploadPromises);
         uploadedImageUrls = [...uploadedImageUrls, ...newImageUrls];
     }
-
+  
     if (videoFile) {
         const videoUploadPromise = new Promise((resolve, reject) => {
             const fileName = `${user.uid}/videos/${Date.now()}_${videoFile.name}`;
@@ -299,23 +328,38 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-800">Producto 1</h3>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg text-center">
-                        <VideoCameraIcon className="h-8 w-8 text-gray-400" />
-                        <label htmlFor="video-upload" className="mt-2 text-sm font-medium text-indigo-600 cursor-pointer">Cargar video</label>
-                        <input id="video-upload" type="file" accept="video/mp4,video/quicktime" onChange={(e) => handleVideoChange(e.target.files[0])} className="hidden"/>
-                        <p className="text-xs text-gray-500 mt-1">Hasta 100 MB</p>
-                        {videoFile && <p className="text-xs text-green-600 mt-1 truncate">{videoFile.name}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg text-center relative">
+                        {videoPreview ? (
+                            <>
+                                <video src={videoPreview} className="h-24 w-24 object-cover rounded-md" controls />
+                                <button type="button" onClick={removeVideo} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center">&times;</button>
+                            </>
+                        ) : (
+                            <>
+                                <VideoCameraIcon className="h-8 w-8 text-gray-400" />
+                                <label htmlFor="video-upload" className="mt-2 text-sm font-medium text-indigo-600 cursor-pointer">Cargar video</label>
+                                <input id="video-upload" type="file" accept="video/mp4,video/quicktime" onChange={(e) => handleVideoChange(e.target.files[0])} className="hidden"/>
+                                <p className="text-xs text-gray-500 mt-1">Hasta 100 MB</p>
+                            </>
+                        )}
                     </div>
                     <div className="space-y-2">
-                        {imageFiles.map((file, index) => (
+                        {Array(5).fill(0).map((_, index) => (
                             <div key={index} className="flex items-center gap-2">
-                                <label htmlFor={`img-upload-${index}`} className="flex-grow flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-100">
-                                    <CameraIcon className="h-6 w-6 text-gray-500" />
-                                    <span className="text-sm text-gray-700">{file ? file.name : `Cargar imagen ${index + 1}`}</span>
-                                </label>
-                                <input id={`img-upload-${index}`} type="file" accept="image/*" onChange={(e) => handleFileChange(index, e.target.files[0])} className="hidden"/>
+                                <div className="relative w-16 h-16">
+                                    {imagePreviews[index] ? (
+                                        <>
+                                            <img src={imagePreviews[index]} alt={`preview ${index}`} className="h-full w-full object-cover rounded-md"/>
+                                            <button type="button" onClick={() => removeImage(index)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">&times;</button>
+                                        </>
+                                    ) : (
+                                        <label htmlFor={`img-upload-${index}`} className="h-full w-full flex items-center justify-center bg-gray-200 rounded-md cursor-pointer hover:bg-gray-300">
+                                            <CameraIcon className="h-6 w-6 text-gray-500" />
+                                        </label>
+                                    )}
+                                    <input id={`img-upload-${index}`} type="file" accept="image/*" onChange={(e) => handleFileChange(index, e.target.files[0])} className="hidden"/>
+                                </div>
                                 {imageRatings[index] && <span className={`text-xs font-semibold ${getRatingColor(imageRatings[index])}`}>{imageRatings[index]}</span>}
                             </div>
                         ))}
@@ -329,16 +373,22 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
                     <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio</label>
+                        <input type="number" id="price" value={price} onChange={e => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
+                    </div>
+                     <div>
                         <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Moneda</label>
                         <select id="currency" value={currency} onChange={e => setCurrency(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
                             {currencies.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio del producto</label>
-                        <input type="number" id="price" value={price} onChange={e => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
+                        <label htmlFor="unit" className="block text-sm font-medium text-gray-700">Unidad</label>
+                        <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                            {units.map(u => <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>)}
+                        </select>
                     </div>
                 </div>
 
@@ -582,7 +632,10 @@ const ProfileModal = ({ isOpen, onClose, user, profile, setProfile }) => {
                     <label className="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
                     <div className="mt-2 flex items-center gap-4">
                         <img src={profile.profileImageUrl || `https://placehold.co/100x100/e2e8f0/64748b?text=Perfil`} alt="Perfil" className="h-24 w-24 rounded-full object-cover"/>
-                        <input type="file" accept="image/*" onChange={e => setProfileImageFile(e.target.files[0])} className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                        <label htmlFor="profile-image-upload" className="cursor-pointer bg-indigo-50 text-indigo-700 font-semibold px-4 py-2 rounded-full text-sm hover:bg-indigo-100">
+                            Subir imagen
+                        </label>
+                        <input id="profile-image-upload" type="file" accept="image/*" onChange={e => setProfileImageFile(e.target.files[0])} className="hidden"/>
                     </div>
                 </div>
                 <div>
