@@ -38,11 +38,11 @@ const DeleteIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 
 const LinkIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>;
 const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m11-4.08V12a1 1 0 00-1-1h-4a1 1 0 00-1 1v.08M12 12v4m3-4v4m-6-4v4m3-3.08V9a1 1 0 011-1h4a1 1 0 011 1v.08M17 3v4m2-2h-4" /></svg>;
 const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
-const CameraIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+const CameraIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+const VideoCameraIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>;
 const UserCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
 const SocialIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
-const ChatBubbleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
 const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.687-1.475L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.655 4.398 1.908 6.166l-.215 1.086 1.057.199z" /></svg>;
 const KeyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
 
@@ -69,12 +69,12 @@ const Modal = ({ children, isOpen, onClose, size = 'lg' }) => {
   const sizeClasses = {
       'md': 'max-w-md',
       'lg': 'max-w-lg',
-      'xl': 'max-w-xl'
+      'xl': 'max-w-2xl'
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 animate-fade-in">
-      <div className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto relative p-6 m-4 animate-fade-in-up`}>
+      <div className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto relative p-6 sm:p-8 m-4 animate-fade-in-up`}>
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors z-10">
           <CloseIcon />
         </button>
@@ -88,15 +88,20 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState('USD');
   const [unit, setUnit] = useState('unidad');
   const [imageFiles, setImageFiles] = useState(Array(5).fill(null));
+  const [imageRatings, setImageRatings] = useState(Array(5).fill(null));
+  const [videoFile, setVideoFile] = useState(null);
   const [existingImageUrls, setExistingImageUrls] = useState([]);
+  const [existingVideoUrl, setExistingVideoUrl] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState(null);
 
   const units = ['unidad', 'kilo', 'gramo', 'litro', 'caja', 'par', 'mes', 'año'];
+  const currencies = ['USD', 'EUR', 'CLP', 'MXN', 'ARS'];
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, currentUser => setUser(currentUser));
@@ -104,80 +109,145 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
   }, []);
   
   useEffect(() => {
-    setIsSubmitting(false);
-    setIsUploading(false);
-    setUploadProgress(0);
-    if (productToEdit) {
-      setName(productToEdit.name || '');
-      setDescription(productToEdit.description || '');
-      setPrice(productToEdit.price || '');
-      setUnit(productToEdit.unit || 'unidad');
-      setExistingImageUrls(productToEdit.images || []);
-      setImageFiles(Array(5).fill(null));
-    } else {
-      resetForm();
+    if (isOpen) {
+        if (productToEdit) {
+          setName(productToEdit.name || '');
+          setDescription(productToEdit.description || '');
+          setPrice(productToEdit.price || '');
+          setCurrency(productToEdit.currency || 'USD');
+          setUnit(productToEdit.unit || 'unidad');
+          setExistingImageUrls(productToEdit.images || []);
+          setExistingVideoUrl(productToEdit.videoUrl || '');
+        } else {
+          resetForm();
+        }
     }
   }, [productToEdit, isOpen]);
 
   const resetForm = () => {
     setName(''); setDescription(''); setPrice('');
-    setUnit('unidad');
+    setCurrency('USD'); setUnit('unidad');
     setImageFiles(Array(5).fill(null));
+    setImageRatings(Array(5).fill(null));
+    setVideoFile(null);
     setExistingImageUrls([]);
+    setExistingVideoUrl('');
     setProductToEdit(null);
   };
   
-  const handleClose = () => { 
-      resetForm();
-      onClose(); 
-  }
+  const handleClose = () => { resetForm(); onClose(); }
 
   const handleFileChange = (index, file) => {
     const newFiles = [...imageFiles];
     newFiles[index] = file;
     setImageFiles(newFiles);
+    rateImageQuality(file, index);
+  };
+  
+  const handleVideoChange = (file) => {
+      if (file && file.size > 100 * 1024 * 1024) { // 100 MB
+          alert("El video no puede superar los 100 MB.");
+          return;
+      }
+      setVideoFile(file);
+  }
+
+  const fileToGenerativePart = async (file) => {
+    const base64EncodedDataPromise = new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+    });
+    return {
+        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+    };
+  }
+
+  const rateImageQuality = async (file, index) => {
+      if (!file) {
+          const newRatings = [...imageRatings];
+          newRatings[index] = null;
+          setImageRatings(newRatings);
+          return;
+      }
+      const newRatings = [...imageRatings];
+      newRatings[index] = 'Analizando...';
+      setImageRatings(newRatings);
+
+      try {
+          const imagePart = await fileToGenerativePart(file);
+          const prompt = "Analiza la calidad de esta imagen de producto. Considera la iluminación, enfoque, composición y atractivo general. Responde únicamente con una de estas cuatro opciones: Malo, Aceptable, Bueno, Excelente.";
+          
+          const payload = { contents: [{ role: "user", parts: [imagePart, { text: prompt }] }] };
+          const apiKey = "";
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+          const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          const rating = result.candidates[0].content.parts[0].text.trim();
+          
+          const finalRatings = [...imageRatings];
+          finalRatings[index] = rating;
+          setImageRatings(finalRatings);
+
+      } catch (error) {
+          console.error("Error calificando imagen:", error);
+          const finalRatings = [...imageRatings];
+          finalRatings[index] = 'Error';
+          setImageRatings(finalRatings);
+      }
   };
 
-  const uploadImages = async () => {
-    if (!user) {
-        throw new Error("User not authenticated for upload");
-    }
+  const uploadMedia = async () => {
     setIsUploading(true);
     setUploadProgress(0);
-    const imageUrls = [...existingImageUrls];
-    const filesToUpload = imageFiles.filter(file => file !== null);
-    if (filesToUpload.length === 0) {
-        setIsUploading(false);
-        return imageUrls;
-    }
-    
-    const uploadPromises = filesToUpload.map(file => {
-        return new Promise((resolve, reject) => {
-            const fileName = `${user.uid}/${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, fileName);
-            const uploadTask = uploadBytesResumable(storageRef, file);
+    let uploadedVideoUrl = existingVideoUrl;
+    let uploadedImageUrls = [...existingImageUrls];
 
+    const filesToUpload = imageFiles.filter(file => file !== null);
+    
+    if (filesToUpload.length > 0) {
+        const imageUploadPromises = filesToUpload.map(file => {
+            return new Promise((resolve, reject) => {
+                const fileName = `${user.uid}/images/${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, fileName);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+                uploadTask.on('state_changed', 
+                    (snapshot) => setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100),
+                    (error) => reject(error),
+                    () => getDownloadURL(uploadTask.snapshot.ref).then(resolve)
+                );
+            });
+        });
+        const newImageUrls = await Promise.all(imageUploadPromises);
+        uploadedImageUrls = [...uploadedImageUrls, ...newImageUrls];
+    }
+
+    if (videoFile) {
+        const videoUploadPromise = new Promise((resolve, reject) => {
+            const fileName = `${user.uid}/videos/${Date.now()}_${videoFile.name}`;
+            const storageRef = ref(storage, fileName);
+            const uploadTask = uploadBytesResumable(storageRef, videoFile);
             uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setUploadProgress(progress);
-                }, 
-                (error) => {
-                    console.error("Upload failed", error);
-                    reject(error);
-                }, 
+                (snapshot) => setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100),
+                (error) => reject(error),
                 () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        resolve(downloadURL);
+                    getDownloadURL(uploadTask.snapshot.ref).then(url => {
+                        uploadedVideoUrl = url;
+                        resolve();
                     });
                 }
             );
         });
-    });
-
-    const newUrls = await Promise.all(uploadPromises);
+        await videoUploadPromise;
+    }
+    
     setIsUploading(false);
-    return [...imageUrls, ...newUrls];
+    return { imageUrls: uploadedImageUrls, videoUrl: uploadedVideoUrl };
   };
 
   const handleSubmit = async (e) => {
@@ -186,19 +256,17 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
     setIsSubmitting(true);
     
     try {
-        const finalImageUrls = await uploadImages();
+        const { imageUrls, videoUrl } = await uploadMedia();
         const productData = {
-          userId: user.uid, 
-          name, 
-          description,
+          userId: user.uid, name, description,
           price: parseFloat(price) || 0,
-          unit,
-          images: finalImageUrls,
+          currency, unit,
+          images: imageUrls,
+          videoUrl,
         };
 
         if (productToEdit) {
-            const productRef = doc(db, 'products', productToEdit.id);
-            await updateDoc(productRef, productData);
+            await updateDoc(doc(db, 'products', productToEdit.id), productData);
         } else {
             await addDoc(collection(db, 'products'), {...productData, createdAt: serverTimestamp()});
         }
@@ -206,82 +274,91 @@ const ProductForm = ({ isOpen, onClose, productToEdit, setProductToEdit }) => {
     } catch (error) {
         console.error("Error al guardar:", error);
         alert("Hubo un error al guardar el producto.");
+    } finally {
         setIsSubmitting(false);
-        setIsUploading(false);
     }
   };
 
+  const getRatingColor = (rating) => {
+      switch(rating) {
+          case 'Excelente': return 'text-green-500';
+          case 'Bueno': return 'text-blue-500';
+          case 'Aceptable': return 'text-yellow-500';
+          case 'Malo': return 'text-red-500';
+          case 'Analizando...': return 'text-gray-500 animate-pulse';
+          default: return 'text-gray-400';
+      }
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="xl">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">{productToEdit ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-6">
             <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Producto</label>
-                <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                <h2 className="text-2xl font-bold text-gray-900">Productos</h2>
+                <p className="text-sm text-gray-500">Muestra tus productos de forma sencilla. ¡Comienza cargando tu primer producto!</p>
             </div>
-            <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
-                <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows="4" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-            </div>
-             
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio (CLP)</label>
-                    <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ej: 19990" />
-                </div>
-                <div>
-                    <label htmlFor="unit" className="block text-sm font-medium text-gray-700">Unidad de Venta</label>
-                    <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        {units.map(u => <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>)}
-                    </select>
-                </div>
-             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes</label>
-                {productToEdit && existingImageUrls.length > 0 && (
-                    <div className="mb-4">
-                        <p className="text-xs text-gray-600">Imágenes actuales:</p>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                            {existingImageUrls.map((url, index) => (
-                                <img key={index} src={url} className="h-16 w-16 rounded-md object-cover"/>
-                            ))}
-                        </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-800">Producto 1</h3>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg text-center">
+                        <VideoCameraIcon className="h-8 w-8 text-gray-400" />
+                        <label htmlFor="video-upload" className="mt-2 text-sm font-medium text-indigo-600 cursor-pointer">Cargar video</label>
+                        <input id="video-upload" type="file" accept="video/mp4,video/quicktime" onChange={(e) => handleVideoChange(e.target.files[0])} className="hidden"/>
+                        <p className="text-xs text-gray-500 mt-1">Hasta 100 MB</p>
+                        {videoFile && <p className="text-xs text-green-600 mt-1 truncate">{videoFile.name}</p>}
                     </div>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {Array(5).fill(0).map((_, index) => (
-                        <div key={index} className="flex items-center border border-gray-300 rounded-md p-2">
-                            <CameraIcon/>
-                            <input 
-                                type="file" 
-                                accept="image/png, image/jpeg, image/webp"
-                                onChange={(e) => handleFileChange(index, e.target.files[0])} 
-                                className="ml-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" 
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
-            
-            {isUploading && (
-                <div className="w-full bg-gray-200 rounded-full">
-                    <div className="bg-indigo-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{ width: `${uploadProgress}%` }}>
-                        {Math.round(uploadProgress)}%
+                    <div className="space-y-2">
+                        {imageFiles.map((file, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                                <label htmlFor={`img-upload-${index}`} className="flex-grow flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-100">
+                                    <CameraIcon className="h-6 w-6 text-gray-500" />
+                                    <span className="text-sm text-gray-700">{file ? file.name : `Cargar imagen ${index + 1}`}</span>
+                                </label>
+                                <input id={`img-upload-${index}`} type="file" accept="image/*" onChange={(e) => handleFileChange(index, e.target.files[0])} className="hidden"/>
+                                {imageRatings[index] && <span className={`text-xs font-semibold ${getRatingColor(imageRatings[index])}`}>{imageRatings[index]}</span>}
+                            </div>
+                        ))}
                     </div>
                 </div>
-            )}
-
-            <div className="flex justify-end space-x-3 pt-4">
-                <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-                <button type="submit" disabled={isSubmitting || isUploading} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 transition-colors">
-                    {isUploading ? 'Subiendo...' : isSubmitting ? 'Guardando...' : 'Guardar Producto'}
-                </button>
             </div>
-        </form>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del producto</label>
+                    <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="currency" className="block text-sm font-medium text-gray-700">Moneda</label>
+                        <select id="currency" value={currency} onChange={e => setCurrency(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                            {currencies.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio del producto</label>
+                        <input type="number" id="price" value={price} onChange={e => setPrice(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
+                    </div>
+                </div>
+
+                <div>
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción del producto</label>
+                    <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows="3" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+                    <button type="button" className="mt-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800"><SparklesIcon /> Mejorar con IA</button>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                    <button type="submit" disabled={isSubmitting || isUploading} className="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
+                        Guardar y continuar
+                    </button>
+                </div>
+            </form>
+        </div>
     </Modal>
   );
 };
+
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
     const [newPassword, setNewPassword] = useState('');
@@ -705,7 +782,7 @@ const DashboardPage = ({ user, onLogout }) => {
   );
 };
 
-// --- COMPONENTES DE CATÁLOGO PÚBLICO ---
+// --- COMPONENTE CATALOG PAGE ---
 const CatalogPage = ({ userId }) => {
     const [products, setProducts] = useState([]);
     const [profile, setUserProfile] = useState(null);
@@ -714,12 +791,12 @@ const CatalogPage = ({ userId }) => {
     const [selectedImage, setSelectedImage] = useState({});
 
     const themes = {
-        default: { bg: 'bg-gray-100', text: 'text-gray-800', accent: 'bg-white', button: 'bg-indigo-600 hover:bg-indigo-700' },
-        dark: { bg: 'bg-gray-800', text: 'text-white', accent: 'bg-gray-900', button: 'bg-indigo-500 hover:bg-indigo-600' },
-        sunset: { bg: 'bg-gradient-to-br from-yellow-200 via-red-300 to-pink-400', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
-        ocean: { bg: 'bg-gradient-to-br from-blue-300 to-indigo-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
-        forest: { bg: 'bg-gradient-to-br from-green-400 to-teal-600', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
-        lavender: { bg: 'bg-gradient-to-br from-purple-300 to-violet-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40' },
+        default: { bg: 'bg-gray-100', text: 'text-gray-800', accent: 'bg-white', button: 'bg-indigo-600 hover:bg-indigo-700 text-white' },
+        dark: { bg: 'bg-gray-800', text: 'text-white', accent: 'bg-gray-900', button: 'bg-indigo-500 hover:bg-indigo-600 text-white' },
+        sunset: { bg: 'bg-gradient-to-br from-yellow-200 via-red-300 to-pink-400', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40 text-white' },
+        ocean: { bg: 'bg-gradient-to-br from-blue-300 to-indigo-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40 text-white' },
+        forest: { bg: 'bg-gradient-to-br from-green-400 to-teal-600', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40 text-white' },
+        lavender: { bg: 'bg-gradient-to-br from-purple-300 to-violet-500', text: 'text-white', accent: 'bg-white/30 backdrop-blur-sm', button: 'bg-white/30 hover:bg-white/40 text-white' },
     };
 
     const currentTheme = themes[profile?.theme] || themes.default;
